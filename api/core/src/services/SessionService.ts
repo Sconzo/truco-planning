@@ -20,46 +20,32 @@ export class SessionService {
         console.log("req ->")
         console.log(req)
         try{
-            // const votingSystem = await prisma.votingSystem.findUnique({
-            //     where: {
-            //         id: req.votingSystemId
-            //     },
-            //     include: {
-            //         votingValues: true,
-            //     }
-            // })
-
-            // if(votingSystem){
-
-                // const newSession = await prisma.session.create({
-                //     data: {
-                //         sessionName : req.name,
-                //         sessionKey : uuidv4(),
-                //         votingSystemId : votingSystem.id
-                //     }
-                // })
-                // console.log("Voting System -> ", votingSystem)
-                // console.log("newSession -> ", newSession)
-            const valueList: number[] = [];
-            [1,2,5].forEach(value => valueList.push(value))
-
-            const sessionResponse: SessionInterface = {
-                sessionId: uuidv4(),
-                roomName: req.name,
-                sessionSystem: {
-                    id: 1,
-                    name: "BASIC",
-                    values: valueList,
-                    coffee: true
+            const votingSystem = await prisma.votingSystem.findUnique({
+                where: {
+                    id: req.votingSystemId
                 },
-                userList: []
+                include: {
+                    votingValues: true,
+                }
+            })
+
+            if(votingSystem){
+
+                const newSession = await prisma.session.create({
+                    data: {
+                        sessionName : req.name,
+                        sessionKey : uuidv4(),
+                        votingSystemId : votingSystem.id
+                    }
+                })
+                console.log("Voting System -> ", votingSystem)
+                console.log("newSession -> ", newSession)
+                return this.entityToResponse(votingSystem, newSession);
             }
-            return sessionResponse;
-            // }
-            // else{
-            //     console.log("Voting System -> ", votingSystem)
-            //     throw new AppError("Error creating session")
-            // }
+            else{
+                console.log("Voting System -> ", votingSystem)
+                throw new AppError("Error creating session")
+            }
         }
         catch (error){
             throw new AppError("Error creating session")
