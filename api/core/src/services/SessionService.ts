@@ -18,9 +18,7 @@ const sessionRepository = new SessionRepository();
 export class SessionService {
 
     async createSession(req : CreateSessionRequest) : Promise<SessionInterface> {
-        console.log("Started: Session Creation Flow")
-        console.log("req ->")
-        console.log(req)
+        //console.log("Started: Session Creation Flow")
         try{
             const votingSystem = await prisma.votingSystem.findUnique({
                 where: {
@@ -40,12 +38,9 @@ export class SessionService {
                         votingSystemId : votingSystem.id
                     }
                 })
-                console.log("Voting System -> ", votingSystem)
-                console.log("newSession -> ", newSession)
                 return this.entityToResponse(votingSystem, newSession);
             }
             else{
-                console.log("Voting System -> ", votingSystem)
                 throw new AppError("Error creating session")
             }
         }
@@ -58,6 +53,20 @@ export class SessionService {
         const valueList: number[] = [];
         [...votingSystem.votingValues.values()].forEach(value => valueList.push(value.intValue))
 
+        const userList : UserInterface[] = [];
+
+        if(newSession.users && newSession.users.length > 0) {
+            newSession.users.forEach((user: User) => {
+                userList.push({
+                    userId: user.userKey,
+                    userName: user.userName,
+                    spectator: user.spectator,
+                    vote: user.userVote !== null ? user.userVote.toString() : "",
+                    roomId: newSession.sessionKey
+                })
+            })
+        }
+
         const sessionResponse: SessionInterface = {
             sessionId: newSession.sessionKey,
             roomName: newSession.sessionName,
@@ -67,7 +76,7 @@ export class SessionService {
                 values: valueList,
                 coffee: true
             },
-            userList: []
+            userList: userList
         }
         return sessionResponse;
     }
@@ -79,9 +88,7 @@ export class SessionService {
             sessionFound = await sessionRepository.getSessionById(sessionId);
             maxTries ++;
         }
-        console.log("GET SESSION BY ID")
-        console.log(maxTries)
-        console.log(sessionFound)
+
         if(sessionFound && sessionFound.users.length !== 0){
             return this.entityToResponse(sessionFound.votingSystem,sessionFound)
         }
