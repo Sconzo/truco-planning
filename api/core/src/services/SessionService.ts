@@ -75,11 +75,13 @@ export class SessionService {
     async getSessionById(sessionId : string) : Promise<SessionInterface> {
         let sessionFound = await sessionRepository.getSessionById(sessionId);
         let maxTries = 0;
-        while ((sessionFound == null || sessionFound.users.length == 0) || maxTries == 10){
+        while ((sessionFound == null || sessionFound.users.length == 0) && maxTries < 10){
             sessionFound = await sessionRepository.getSessionById(sessionId);
             maxTries ++;
         }
-
+        console.log("GET SESSION BY ID")
+        console.log(maxTries)
+        console.log(sessionFound)
         if(sessionFound && sessionFound.users.length !== 0){
             return this.entityToResponse(sessionFound.votingSystem,sessionFound)
         }
