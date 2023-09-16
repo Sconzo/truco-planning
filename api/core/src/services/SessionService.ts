@@ -8,11 +8,13 @@ import {pusher} from "../server";
 import {prisma} from "../prisma/client";
 import {AppError} from "../errors/AppError";
 import {UserInterface} from "../interfaces/user/UserInterface";
-import {User} from "@prisma/client";
+import {Session, User} from "@prisma/client";
+import {SessionRepository} from "../repositories/SessionRepository";
+import {UserService} from "./UserService";
 
 export const sessionList : SessionInterface[] = [];
 
-const votingSystemService = new VotingSystemService();
+const sessionRepository = new SessionRepository();
 export class SessionService {
 
     async createSession(req : CreateSessionRequest) : Promise<SessionInterface> {
@@ -71,22 +73,15 @@ export class SessionService {
     }
 
     async getSessionById(sessionId : string) : Promise<SessionInterface> {
-        const session = await prisma.session.findUnique({
-            where: {
-                sessionKey: sessionId
-            },
-            include: {
-                users : true,
-                votingSystem: {
-                    include: {
-                        votingValues: true
-                    },
-                },
-            },
-        });
+        let sessionFound = await sessionRepository.getSessionById(sessionId);
+        let maxTries = 0;
+        while ((sessionFound == null || sessionFound.users.length == 0) || maxTries == 10){
+            sessionFound = await sessionRepository.getSessionById(sessionId);
+            maxTries ++;
+        }
 
-        if(session){
-            return this.entityToResponse(session.votingSystem,session)
+        if(sessionFound && sessionFound.users.length !== 0){
+            return this.entityToResponse(sessionFound.votingSystem,sessionFound)
         }
         else{
             console.log("Session not found")
