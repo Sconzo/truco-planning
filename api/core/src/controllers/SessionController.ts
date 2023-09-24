@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {SessionService} from "../services/SessionService";
+import {SessionService} from "../core/services/SessionService";
 
 const service = new SessionService();
 export class SessionController {

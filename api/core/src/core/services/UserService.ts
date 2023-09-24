@@ -1,10 +1,10 @@
-import {UserCreationRequest} from "../dtos/user/UserCreationRequest";
-import {UserInterface} from "../interfaces/user/UserInterface"
+import {UserCreationRequest} from "../domain/dtos/user/UserCreationRequest";
+import {UserInterface} from "../domain/interfaces/user/UserInterface"
 import {sessionList} from "./SessionService";
-import {pusher} from "../server";
-import {UserVoteRequest} from "../dtos/user/UserVoteRequest";
-import {UserRemoveRequest} from "../dtos/user/UserRemoveRequest";
-import {prisma} from "../prisma/client";
+import {pusher} from "../../server";
+import {UserVoteRequest} from "../domain/dtos/user/UserVoteRequest";
+import {UserRemoveRequest} from "../domain/dtos/user/UserRemoveRequest";
+import {prisma} from "../../prisma/client";
 import {User} from "@prisma/client";
 
 export class UserService {

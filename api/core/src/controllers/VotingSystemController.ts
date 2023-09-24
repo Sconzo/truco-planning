@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {VotingSystemService} from "../services/VotingSystemService";
+import {VotingSystemService} from "../core/services/VotingSystemService";
 
 const service = new VotingSystemService();
 

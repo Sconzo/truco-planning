@@ -1,4 +1,4 @@
-import {VotingSystemInterface} from "../interfaces/votingSystem/VotingSystemInterface";
+import {VotingSystemInterface} from "../domain/interfaces/votingSystem/VotingSystemInterface";
 import {VotingSystemRepository} from "../repositories/VotingSystemRepository";
 
 export const Basic : VotingSystemInterface= {

@@ -1,12 +1,12 @@
-import {SessionInterface} from "../interfaces/session/SessionInterface"
-import {CreateSessionRequest} from "../dtos/session/CreateSessionRequest";
-import {VoteRevealRequest} from "../dtos/session/VoteRevealRequest";
-import {ResetRequest} from "../dtos/session/ResetRequest";
+import {SessionInterface} from "../domain/interfaces/session/SessionInterface"
+import {CreateSessionRequest} from "../domain/dtos/session/CreateSessionRequest";
+import {VoteRevealRequest} from "../domain/dtos/session/VoteRevealRequest";
+import {ResetRequest} from "../domain/dtos/session/ResetRequest";
 import {v4 as uuidv4} from 'uuid';
-import {pusher} from "../server";
-import {prisma} from "../prisma/client";
+import {pusher} from "../../server";
+import {prisma} from "../../prisma/client";
 import {AppError} from "../errors/AppError";
-import {UserInterface} from "../interfaces/user/UserInterface";
+import {UserInterface} from "../domain/interfaces/user/UserInterface";
 import {User} from "@prisma/client";
 import {SessionRepository} from "../repositories/SessionRepository";
 
