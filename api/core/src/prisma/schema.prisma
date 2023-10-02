@@ -42,7 +42,7 @@ model User {
 
 model VotingSystem {
   id         Int      @id @default(autoincrement())
-  systemName String   @unique @map("system_name") @db.VarChar(150)
+  systemName String   @map("system_name") @db.VarChar(150)
   createdAt  DateTime @default(now()) @map("created_at")
 
   votingValues VotingValues[]

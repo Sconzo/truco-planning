@@ -49,4 +49,13 @@ export class SessionController {
             res.status(404).send("Reset failed");
         }
     }
+
+    async createSessionCustomDeck(req:Request,res:Response){
+
+        const body = req.body;
+
+        const result = await service.createSessionCustomDeck(body.customSystemRequest)
+
+        return res.status(201).json(result);
+    }
 }

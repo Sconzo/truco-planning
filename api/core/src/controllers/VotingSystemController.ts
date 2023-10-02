@@ -10,4 +10,12 @@ export class VotingSystemController{
 
         return res.status(201).json(result);
     }
+    // async create(req:Request,res:Response){
+    //
+    //     const deck = req.body;
+    //
+    //     const result = await service.createNewVotingSystem(deck);
+    //
+    //     return res.status(201).json(result);
+    // }
 }

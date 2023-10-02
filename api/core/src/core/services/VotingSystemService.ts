@@ -1,35 +1,28 @@
-import {VotingSystemInterface} from "../domain/interfaces/votingSystem/VotingSystemInterface";
 import {VotingSystemRepository} from "../repositories/VotingSystemRepository";
+import {DeckMapper} from "../mappers/DeckMapper";
+import {VotingSystemListResponse} from "../domain/dtos/votingSystem/VotingSystemListResponse";
+import {VotingSystemRequest} from "../domain/dtos/votingSystem/VotingSystemRequest";
 
-export const Basic : VotingSystemInterface= {
-    id : 1,
-    name: "BASIC",
-    values: [1, 2, 4, 8, 16],
-    coffee: true
-}
-
-export const Fibonacci : VotingSystemInterface = {
-    id : 2,
-    name: "FIBONACCI",
-    values: [0, 1, 2, 3, 5, 8, 13, 21, 34],
-    coffee: true
-}
-export const possibleSystems : VotingSystemInterface[] = [Basic,Fibonacci];
 
 const repository = new VotingSystemRepository();
+const mapper = new DeckMapper();
+
 
 export class VotingSystemService {
 
-    async getVotingSystem(id:number) {
-        return possibleSystems.find(sys=> sys.id === id);
-    }
-
     async listAllVotingSystems() {
-        return repository.listAllDecks();
-
+        const decks = await repository.listAllDecks();
+        const listVotingSystem : VotingSystemListResponse[] = [];
+        decks.forEach(deck => {
+            if (deck.id <= 2) {
+                listVotingSystem.push(mapper.entityToResponse(deck))
+            }
+        });
+        return listVotingSystem
     }
 
-    async createNewVotingSystem(id:number) {
-
-    }
+    // async createNewVotingSystem(deck : VotingSystemRequest) {
+    //
+    //     const deckCreated = await repository.saveDeck(deck);
+    // }
 }
