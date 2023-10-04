@@ -1,18 +1,21 @@
-import {SessionInterface} from "../interfaces/session/SessionInterface"
-import {CreateSessionRequest} from "../dtos/session/CreateSessionRequest";
-import {VoteRevealRequest} from "../dtos/session/VoteRevealRequest";
-import {ResetRequest} from "../dtos/session/ResetRequest";
+import {SessionInterface} from "../domain/interfaces/session/SessionInterface"
+import {CreateSessionRequest} from "../domain/dtos/session/CreateSessionRequest";
+import {VoteRevealRequest} from "../domain/dtos/session/VoteRevealRequest";
+import {ResetRequest} from "../domain/dtos/session/ResetRequest";
 import {v4 as uuidv4} from 'uuid';
-import {pusher} from "../server";
-import {prisma} from "../prisma/client";
+import {pusher} from "../../server";
+import {prisma} from "../../prisma/client";
 import {AppError} from "../errors/AppError";
-import {UserInterface} from "../interfaces/user/UserInterface";
+import {UserInterface} from "../domain/interfaces/user/UserInterface";
 import {User} from "@prisma/client";
 import {SessionRepository} from "../repositories/SessionRepository";
+import {CustomSystemRequest} from "../domain/dtos/session/CreateSessionCustomDeckRequest";
+import {VotingSystemRepository} from "../repositories/VotingSystemRepository";
 
 export const sessionList : SessionInterface[] = [];
 
 const sessionRepository = new SessionRepository();
+const votingSystemRepository = new VotingSystemRepository();
 export class SessionService {
 
     async createSession(req : CreateSessionRequest) : Promise<SessionInterface> {
@@ -71,8 +74,7 @@ export class SessionService {
             sessionSystem: {
                 id: votingSystem.id,
                 name: votingSystem.systemName,
-                values: valueList,
-                coffee: true
+                intValues: valueList
             },
             userList: userList
         }
@@ -131,7 +133,33 @@ export class SessionService {
         }
 
         await pusher.trigger('presence-session_' + req.sessionId, 'reset', userList);
+    }
 
+    async createSessionCustomDeck(req : CustomSystemRequest) : Promise<SessionInterface> {
+        console.log("Started: Session Creation Flow", req.sessionName)
+        try{
+            const deck = await votingSystemRepository.saveDeck(req.votingSystemRequest)
+
+            console.log(deck)
+            if(deck){
+
+                const newSession = await prisma.session.create({
+                    data: {
+                        sessionName : req.sessionName,
+                        sessionKey : uuidv4(),
+                        votingSystemId : deck.id
+                    }
+                })
+                return this.entityToResponse(deck, newSession);
+            }
+            else{
+                throw new AppError("Error creating session")
+            }
+        }
+        catch (error){
+            console.error("Erro criando deck customizado", error)
+            throw error
+        }
     }
 }
 
