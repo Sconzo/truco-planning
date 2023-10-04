@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import {SessionService} from "../services/SessionService";
+import {SessionService} from "../core/services/SessionService";
 
 const service = new SessionService();
 export class SessionController {
@@ -48,5 +48,14 @@ export class SessionController {
         catch (error){
             res.status(404).send("Reset failed");
         }
+    }
+
+    async createSessionCustomDeck(req:Request,res:Response){
+
+        const body = req.body;
+
+        const result = await service.createSessionCustomDeck(body.customSystemRequest)
+
+        return res.status(201).json(result);
     }
 }
