@@ -84,7 +84,7 @@ export class SessionService {
     async getSessionById(sessionId : string) : Promise<SessionInterface> {
         let sessionFound = await sessionRepository.getSessionById(sessionId);
         let maxTries = 0;
-        while ((sessionFound == null || sessionFound.users.length == 0) && maxTries < 100){
+        while ((sessionFound == null || sessionFound.users.length == 0) && maxTries < 99999){
             sessionFound = await sessionRepository.getSessionById(sessionId);
             maxTries ++;
         }
