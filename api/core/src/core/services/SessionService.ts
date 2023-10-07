@@ -93,10 +93,7 @@ export class SessionService {
             return this.entityToResponse(sessionFound.votingSystem,sessionFound)
         }
         else{
-            console.log("Session not found");
-            console.log(sessionFound);
-            console.log(maxTries);
-            return Promise.reject("Session not found");
+            return Promise.reject({error : "Session not found", session : sessionFound, tries : maxTries});
         }
     }
 

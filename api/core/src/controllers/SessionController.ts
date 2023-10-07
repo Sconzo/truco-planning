@@ -22,7 +22,7 @@ export class SessionController {
             return res.status(201).json(result);
         }
         catch (error){
-            res.status(404).send("Session not found");
+            res.status(404).send(error);
         }
     }
 
