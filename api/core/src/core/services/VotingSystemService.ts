@@ -1,7 +1,7 @@
 import {VotingSystemRepository} from "../repositories/VotingSystemRepository";
 import {DeckMapper} from "../mappers/DeckMapper";
 import {VotingSystemListResponse} from "../domain/dtos/votingSystem/VotingSystemListResponse";
-import {VotingSystemRequest} from "../domain/dtos/votingSystem/VotingSystemRequest";
+import {AppError} from "../errors/AppError";
 
 
 const repository = new VotingSystemRepository();
@@ -12,17 +12,16 @@ export class VotingSystemService {
 
     async listAllVotingSystems() {
         const decks = await repository.listAllDecks();
-        const listVotingSystem : VotingSystemListResponse[] = [];
-        decks.forEach(deck => {
-            if (deck.id <= 2) {
-                listVotingSystem.push(mapper.entityToResponse(deck))
-            }
-        });
+        const listVotingSystem: VotingSystemListResponse[] = [];
+        if (decks.length !== 0) {
+            decks.forEach(deck => {
+                if (deck.id <= 2) {
+                    listVotingSystem.push(mapper.entityToResponse(deck))
+                }
+            });
+        } else {
+            throw new AppError("Deck list is empty", 404)
+        }
         return listVotingSystem
     }
-
-    // async createNewVotingSystem(deck : VotingSystemRequest) {
-    //
-    //     const deckCreated = await repository.saveDeck(deck);
-    // }
 }

@@ -1,45 +1,40 @@
 import {UserService} from "../core/services/UserService";
-import { Request, Response } from 'express';
+import {NextFunction, Request, Response} from 'express';
 
 const userService = new UserService();
 
-export class UserController{
+export class UserController {
 
-    async createUser(req : Request,res:Response) {
-        const body = req.body;
+    async createUser(req: Request, res: Response, next: NextFunction) {
 
         try {
-            const result =  await userService.createUser(body)
+            const body = req.body;
+            const result = await userService.createUser(body)
             return res.status(201).json(result);
-
         } catch (error) {
-            console.log(error)
+            return next(error)
         }
-
     }
 
-    async removeUser(req : Request,res:Response) {
-        const body = req.body;
+    async removeUser(req: Request, res: Response, next: NextFunction) {
 
         try {
-            const result =  await userService.removeUser(body)
-            return res.status(201).json(result);
-
+            const body = req.body;
+            const result = await userService.removeUser(body)
+            return res.status(200).json(result);
         } catch (error) {
-            console.log(error)
+            return next(error)
         }
-
     }
 
-    async userVoted(req : Request,res:Response) {
-        const body = req.body;
+    async userVoted(req: Request, res: Response, next: NextFunction) {
 
         try {
-            const result =  await userService.userVoted(body)
-            return res.status(201).json(result);
-
+            const body = req.body;
+            const result = await userService.userVoted(body)
+            return res.status(200).json(result);
         } catch (error) {
-            console.log(error)
+            return next(error)
         }
 
     }

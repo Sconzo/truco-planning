@@ -11,74 +11,39 @@ import {User} from "@prisma/client";
 import {SessionRepository} from "../repositories/SessionRepository";
 import {CustomSystemRequest} from "../domain/dtos/session/CreateSessionCustomDeckRequest";
 import {VotingSystemRepository} from "../repositories/VotingSystemRepository";
+import {SessionMapper} from "../mappers/SessionMapper";
 
 export const sessionList : SessionInterface[] = [];
 
 const sessionRepository = new SessionRepository();
 const votingSystemRepository = new VotingSystemRepository();
+const mapper = new SessionMapper();
 export class SessionService {
 
     async createSession(req : CreateSessionRequest) : Promise<SessionInterface> {
-        //console.log("Started: Session Creation Flow")
-        try{
-            const votingSystem = await prisma.votingSystem.findUnique({
-                where: {
-                    id: req.votingSystemId
-                },
-                include: {
-                    votingValues: true,
+
+        const votingSystem = await prisma.votingSystem.findUnique({
+            where: {
+                id: req.votingSystemId
+            },
+            include: {
+                votingValues: true,
+            }
+        })
+        if(votingSystem){
+            const newSession = await prisma.session.create({
+                data: {
+                    sessionName : req.name,
+                    sessionKey : uuidv4(),
+                    votingSystemId : 1
                 }
             })
-
-            if(votingSystem){
-
-                const newSession = await prisma.session.create({
-                    data: {
-                        sessionName : req.name,
-                        sessionKey : uuidv4(),
-                        votingSystemId : votingSystem.id
-                    }
-                })
-                return this.entityToResponse(votingSystem, newSession);
-            }
-            else{
-                throw new AppError("Error creating session")
-            }
+            return mapper.entityToResponse(votingSystem, newSession);
         }
-        catch (error){
-            throw new AppError("Error creating session")
-        }
-    }
-
-    private entityToResponse(votingSystem : any, newSession : any) {
-        const valueList: number[] = [];
-        [...votingSystem.votingValues.values()].forEach(value => valueList.push(value.intValue))
-
-        const userList : UserInterface[] = [];
-
-        if(newSession.users && newSession.users.length > 0) {
-            newSession.users.forEach((user: User) => {
-                userList.push({
-                    userId: user.userKey,
-                    userName: user.userName,
-                    spectator: user.spectator,
-                    vote: user.userVote !== null ? user.userVote.toString() : "",
-                    roomId: newSession.sessionKey
-                })
-            })
+        else{
+            throw new AppError("Voting System not found", 404)
         }
 
-        const sessionResponse: SessionInterface = {
-            sessionId: newSession.sessionKey,
-            roomName: newSession.sessionName,
-            sessionSystem: {
-                id: votingSystem.id,
-                name: votingSystem.systemName,
-                intValues: valueList
-            },
-            userList: userList
-        }
-        return sessionResponse;
     }
 
     async getSessionById(sessionId : string) : Promise<SessionInterface> {
@@ -90,22 +55,18 @@ export class SessionService {
         }
 
         if(sessionFound && sessionFound.users.length !== 0){
-            return this.entityToResponse(sessionFound.votingSystem,sessionFound)
+            return mapper.entityToResponse(sessionFound.votingSystem,sessionFound)
         }
         else{
-            return Promise.reject({error : "Session not found", session : sessionFound, tries : maxTries});
+            throw new AppError("Session not found after " + maxTries + "tries", 404)
         }
     }
 
     async voteReveal(req : VoteRevealRequest) {
-        //const session = this.getSessionById(req.sessionId);
-
         await pusher.trigger('presence-session_' + req.sessionId, 'vote_reveal', req.mean);
-
     }
 
     async reset(req : ResetRequest) {
-        console.log(req.sessionId)
         const session = await prisma.session.findUnique({
             where : {
                 sessionKey: req.sessionId
@@ -117,7 +78,7 @@ export class SessionService {
 
         const userList : UserInterface[] = []
         if(session){
-            const usersAfterVoteReset = await prisma.user.updateMany({
+            await prisma.user.updateMany({
                 where: { sessionId: session.id },
                 data: { userVote: null }
             });
@@ -130,34 +91,27 @@ export class SessionService {
                 roomId : session.sessionKey
             }))
         }
+        else{
+            throw new AppError("Session not found", 404)
+        }
 
         await pusher.trigger('presence-session_' + req.sessionId, 'reset', userList);
     }
 
     async createSessionCustomDeck(req : CustomSystemRequest) : Promise<SessionInterface> {
-        console.log("Started: Session Creation Flow", req.sessionName)
-        try{
-            const deck = await votingSystemRepository.saveDeck(req.votingSystemRequest)
-
-            console.log(deck)
-            if(deck){
-
-                const newSession = await prisma.session.create({
-                    data: {
-                        sessionName : req.sessionName,
-                        sessionKey : uuidv4(),
-                        votingSystemId : deck.id
-                    }
-                })
-                return this.entityToResponse(deck, newSession);
-            }
-            else{
-                throw new AppError("Error creating session")
-            }
+        const deck = await votingSystemRepository.saveDeck(req.votingSystemRequest)
+        if(deck){
+            const newSession = await prisma.session.create({
+                data: {
+                    sessionName : req.sessionName,
+                    sessionKey : uuidv4(),
+                    votingSystemId : deck.id
+                }
+            })
+            return mapper.entityToResponse(deck, newSession);
         }
-        catch (error){
-            console.error("Erro criando deck customizado", error)
-            throw error
+        else{
+            throw new AppError("Deck not found", 404)
         }
     }
 }
