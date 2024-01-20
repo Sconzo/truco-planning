@@ -1,61 +1,61 @@
-import { Request, Response } from 'express';
+import {NextFunction, Request, Response} from 'express';
 import {SessionService} from "../core/services/SessionService";
 
 const service = new SessionService();
+
 export class SessionController {
 
-    async createSession(req:Request,res:Response){
+    async createSession(req: Request, res: Response, next: NextFunction) {
 
-        const body = req.body;
-
-        const result = await service.createSession(body)
-
-        return res.status(201).json(result);
+        try {
+            const body = req.body;
+            const result = await service.createSession(body)
+            return res.status(201).json(result);
+        } catch (error) {
+            return next(error)
+        }
     }
-    async getSessionById(req:Request,res:Response){
 
-        try{
+    async getSessionById(req: Request, res: Response, next: NextFunction) {
+
+        try {
             const sessionId = req.params.sessionId;
-
-            const result = await service.getSessionById(sessionId).catch()
-
-            return res.status(201).json(result);
-        }
-        catch (error){
-            res.status(404).send(error);
+            const result = await service.getSessionById(sessionId)
+            return res.status(200).json(result);
+        } catch (error) {
+            return next(error)
         }
     }
 
-    async voteReveal(req:Request,res:Response){
+    async voteReveal(req: Request, res: Response, next: NextFunction) {
 
-        try{
-            const result = await service.voteReveal(req.body).catch()
-
-            return res.status(201).json(result);
-        }
-        catch (error){
-            res.status(404).send("Vote Reveal Failed");
+        try {
+            const result = await service.voteReveal(req.body)
+            return res.status(200).json(result);
+        } catch (error) {
+            return next(error)
         }
     }
 
-    async reset(req:Request,res:Response){
+    async reset(req: Request, res: Response, next: NextFunction) {
 
-        try{
-            const result = await service.reset(req.body).catch()
-
-            return res.status(201).json(result);
-        }
-        catch (error){
-            res.status(404).send("Reset failed");
+        try {
+            const result = await service.reset(req.body)
+            return res.status(200).json(result);
+        } catch (error) {
+            return next(error)
         }
     }
 
-    async createSessionCustomDeck(req:Request,res:Response){
+    async createSessionCustomDeck(req: Request, res: Response, next: NextFunction) {
+        try {
+            const body = req.body;
+            const result = await service.createSessionCustomDeck(body.customSystemRequest)
+            return res.status(201).json(result);
+        }
+        catch (error){
+            return next(error)
+        }
 
-        const body = req.body;
-
-        const result = await service.createSessionCustomDeck(body.customSystemRequest)
-
-        return res.status(201).json(result);
     }
 }
